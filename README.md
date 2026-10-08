@@ -36,6 +36,8 @@ npm run dev
 
 Open [http://localhost:3001](http://localhost:3001). No `.env` file, API key, or external service is required for this offline demo. See [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) for a walkthrough.
 
+For the Chinese competition narrative, rubric mapping, LangSmith differentiation, and draft answers to the four submission questions, see [`docs/COMPETITION_SUBMISSION_CN.md`](docs/COMPETITION_SUBMISSION_CN.md).
+
 ## Run the investigation example
 
 From the repository root, install the Python dependencies and run the deterministic example:
