@@ -8,6 +8,9 @@ describe('competition demo routes', () => {
   it('uses the evidence console as the home route and keeps the agent entry point', () => {
     expect(read('../app/page.tsx')).toMatch(/EvidenceConsole/)
     expect(read('../app/agent/page.tsx')).toMatch(/SupportAgentChat/)
+    expect(read('../components/EvidenceConsole.tsx')).toMatch(/Agent outputs/)
+    expect(read('../components/EvidenceConsole.tsx')).toMatch(/What the agent actually remembers/)
+    expect(read('../components/EvidenceConsole.tsx')).toMatch(/Related memory events/)
   })
 
   it('provides a fixed enterprise handover scenario with consistent counts', () => {
