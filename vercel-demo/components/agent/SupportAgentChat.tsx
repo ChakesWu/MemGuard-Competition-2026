@@ -2,7 +2,8 @@
 
 import { FormEvent, useRef, useState } from 'react'
 import { DemoApproval, DemoScenario, initialDemoResponse, respondToMessage, resolveApproval } from '../../lib/demo-agent'
-import { evidenceUrl, getDemoTrace } from '../../lib/demo-evidence'
+import { answerEvidenceParts, evidenceUrl, getDemoTrace, getInlineEvidence } from '../../lib/demo-evidence'
+import EvidenceCitation from './EvidenceCitation'
 
 type DemoMessage = { id: number; role: 'human' | 'assistant'; content: string; scenario?: DemoScenario; traceId?: string }
 
@@ -97,7 +98,9 @@ export default function SupportAgentChat() {
                   </div>
                 )}
                 <span className="mg-agent-message__label">{message.role === 'human' ? 'You' : 'Support agent demo'}</span>
-                <p>{message.content}</p>
+                {message.role === 'assistant' && message.scenario && message.traceId
+                  ? <EvidenceCitation parts={answerEvidenceParts(message.content, getInlineEvidence(message.scenario))} scenario={message.scenario} traceId={message.traceId} />
+                  : <p>{message.content}</p>}
               </article>
             ))}
           </div>

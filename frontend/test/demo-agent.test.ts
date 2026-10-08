@@ -1,11 +1,32 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { initialDemoResponse, respondToMessage, resolveApproval } from '../lib/demo-agent'
-import { evidenceUrl, getDemoTrace } from '../lib/demo-evidence'
+import { answerEvidenceParts, evidenceUrl, getDemoTrace, getInlineEvidence } from '../lib/demo-evidence'
 
 describe('synthetic customer-support demo', () => {
   it('links each fixed answer to its own trace and section', () => {
     expect(evidenceUrl('refund', 'demo-refund-2', 'lineage')).toBe('/?scenario=refund&trace=demo-refund-2#lineage')
     expect(evidenceUrl('refund', 'demo-refund-2', 'trust')).toBe('/?scenario=refund&trace=demo-refund-2#trust')
+  })
+
+  it('anchors inline source chips to exact answer segments and preserves the original text', () => {
+    const response = respondToMessage('I need a refund for ORD-4821 because the item is defective.')
+    const parts = answerEvidenceParts(response.answer, getInlineEvidence(response.scenario))
+    expect(parts.map(part => part.text).join('')).toBe(response.answer)
+    const citations = parts.flatMap(part => part.citation ? [part.citation] : [])
+    expect(citations.map(citation => citation.sourceId)).toContain('ORD-4821')
+    expect(citations.map(citation => citation.sourceId)).toContain('refund-policy')
+    expect(citations.find(citation => citation.sourceId === 'ORD-4821')).toMatchObject({
+      role: 'factual support', trustScore: 94.694719, trustLevel: 'high', policy: 'allow', includedInPrompt: true,
+    })
+  })
+
+  it('renders the screenshot-style evidence popover fields and full evidence link', () => {
+    const component = readFileSync(new URL('../components/agent/EvidenceCitation.tsx', import.meta.url), 'utf8')
+    expect(component).toContain('Memory evidence')
+    expect(component).toContain('Role in output')
+    expect(component).toContain('Included in prompt')
+    expect(component).toContain('Open full evidence')
   })
 
   it('shows the exact refund answer with active and expired sources in the console', () => {
