@@ -11,7 +11,9 @@ export type DemoApproval = {
   allowedDecisions: Array<'approve' | 'edit' | 'reject'>
 }
 
-export type DemoResponse = { answer: string; approval: DemoApproval | null }
+export type DemoScenario = 'overview' | 'greeting' | 'order' | 'policy' | 'refund' | 'ordinary_refund' | 'approved' | 'edited' | 'rejected'
+
+export type DemoResponse = { answer: string; approval: DemoApproval | null; scenario: DemoScenario }
 
 export function initialDemoResponse(): string {
   return `Order: ${ORDER_FACTS}\nPolicy: ${POLICY_FACTS}\nDecision: A defective-item claim requires manual review and human approval. No refund has been issued.`
@@ -32,27 +34,44 @@ export function respondToMessage(message: string): DemoResponse {
         policyVersion: 'v2',
         allowedDecisions: ['approve', 'edit', 'reject'],
       },
+      scenario: 'refund',
     }
   }
   if (asksRefund) {
     return {
       answer: `Order: ${ORDER_FACTS}\nPolicy: ${POLICY_FACTS}\nDecision: An ordinary refund is outside the 14-day window. If the item is defective, describe the defect so a human can review the claim. No refund has been issued.`,
       approval: null,
+      scenario: 'ordinary_refund',
     }
   }
   if (/policy|exception|window|政策|例外|期限/.test(request)) {
     return {
       answer: `Policy: ${POLICY_FACTS}\nDecision: The expired exception is not valid evidence for an automatic refund. A defective-item claim requires manual review.`,
       approval: null,
+      scenario: 'policy',
     }
   }
   if (/ord-4821|order|where|status|订单|訂單|物流|状态|狀態/.test(request)) {
-    return { answer: `Order: ${ORDER_FACTS}\nCustomer: Alex Chen (VIP, synthetic).\nRefund: No refund has been issued in this fixed demo snapshot.`, approval: null }
+    return { answer: `Order: ${ORDER_FACTS}\nCustomer: Alex Chen (VIP, synthetic).\nRefund: No refund has been issued in this fixed demo snapshot.`, approval: null, scenario: 'order' }
   }
   if (/^(hi|hello|hey|你好|您好)[!！.。\s]*$/.test(request)) {
-    return { answer: `Hello. ${ORDER_FACTS} ${POLICY_FACTS} A defective-item refund claim requires manual review.`, approval: null }
+    return { answer: `Hello. ${ORDER_FACTS} ${POLICY_FACTS} A defective-item refund claim requires manual review.`, approval: null, scenario: 'greeting' }
   }
-  return { answer: initialDemoResponse(), approval: null }
+  return { answer: initialDemoResponse(), approval: null, scenario: 'overview' }
+}
+
+export function answerForScenario(scenario: DemoScenario): string {
+  switch (scenario) {
+    case 'greeting': return respondToMessage('hi').answer
+    case 'order': return respondToMessage('Where is ORD-4821?').answer
+    case 'policy': return respondToMessage('What is the refund policy?').answer
+    case 'refund': return respondToMessage('I need a refund for ORD-4821 because the item is defective.').answer
+    case 'ordinary_refund': return respondToMessage('I want a refund for ORD-4821.').answer
+    case 'approved': return resolveApproval('approve')
+    case 'edited': return resolveApproval('edit')
+    case 'rejected': return resolveApproval('reject')
+    default: return initialDemoResponse()
+  }
 }
 
 export function resolveApproval(decision: 'approve' | 'edit' | 'reject'): string {

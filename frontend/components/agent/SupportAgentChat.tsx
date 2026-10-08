@@ -1,32 +1,38 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
-import { DemoApproval, initialDemoResponse, respondToMessage, resolveApproval } from '../../lib/demo-agent'
+import { FormEvent, useRef, useState } from 'react'
+import { DemoApproval, DemoScenario, initialDemoResponse, respondToMessage, resolveApproval } from '../../lib/demo-agent'
+import { evidenceUrl, getDemoTrace } from '../../lib/demo-evidence'
 
-type DemoMessage = { id: number; role: 'human' | 'assistant'; content: string }
+type DemoMessage = { id: number; role: 'human' | 'assistant'; content: string; scenario?: DemoScenario; traceId?: string }
 
 export default function SupportAgentChat() {
   const [draft, setDraft] = useState('')
-  const [messages, setMessages] = useState<DemoMessage[]>([{ id: 0, role: 'assistant', content: initialDemoResponse() }])
+  const [messages, setMessages] = useState<DemoMessage[]>([{ id: 0, role: 'assistant', content: initialDemoResponse(), scenario: 'overview', traceId: 'demo-overview-1' }])
   const [approval, setApproval] = useState<DemoApproval | null>(null)
+  const traceSequence = useRef(1)
 
   function resetDemo() {
-    setMessages([{ id: 0, role: 'assistant', content: initialDemoResponse() }])
+    setMessages([{ id: 0, role: 'assistant', content: initialDemoResponse(), scenario: 'overview', traceId: 'demo-overview-1' }])
     setApproval(null)
     setDraft('')
+    traceSequence.current = 1
   }
 
-  function appendMessage(role: DemoMessage['role'], content: string) {
-    setMessages((current) => [...current, { id: Date.now() + Math.random(), role, content }])
+  function appendDecision(decision: 'approve' | 'edit' | 'reject') {
+    const scenario: DemoScenario = decision === 'approve' ? 'approved' : decision === 'edit' ? 'edited' : 'rejected'
+    const traceId = `demo-${scenario}-${++traceSequence.current}`
+    setMessages((current) => [...current, { id: Date.now() + Math.random(), role: 'assistant', content: resolveApproval(decision), scenario, traceId }])
   }
 
   function sendText(text: string) {
     if (!text) return
     const response = respondToMessage(text)
+    const traceId = `demo-${response.scenario}-${++traceSequence.current}`
     setMessages((current) => [
       ...current,
       { id: Date.now() + Math.random(), role: 'human', content: text },
-      { id: Date.now() + Math.random(), role: 'assistant', content: response.answer },
+      { id: Date.now() + Math.random(), role: 'assistant', content: response.answer, scenario: response.scenario, traceId },
     ])
     setApproval(response.approval)
     setDraft('')
@@ -38,7 +44,7 @@ export default function SupportAgentChat() {
   }
 
   function decide(decision: 'approve' | 'edit' | 'reject') {
-    appendMessage('assistant', resolveApproval(decision))
+    appendDecision(decision)
     setApproval(null)
   }
 
@@ -80,6 +86,15 @@ export default function SupportAgentChat() {
           <div className="mg-agent-messages" aria-live="polite">
             {messages.map((message) => (
               <article key={message.id} className={`mg-agent-message ${message.role === 'human' ? 'mg-agent-message--user' : 'mg-agent-message--assistant'}`}>
+                {message.scenario && message.traceId && (
+                  <div className="mg-agent-message__evidence" aria-label="Answer evidence tools">
+                    <span className={`mg-evidence-pill mg-evidence-pill--${getDemoTrace(message.scenario, message.traceId).trust.state}`}>
+                      {getDemoTrace(message.scenario, message.traceId).trust.label}
+                    </span>
+                    <a href={evidenceUrl(message.scenario, message.traceId, 'lineage')} target="_blank" rel="noopener noreferrer">溯源 · Provenance</a>
+                    <a href={evidenceUrl(message.scenario, message.traceId, 'trust')} target="_blank" rel="noopener noreferrer">可信度 · Trust</a>
+                  </div>
+                )}
                 <span className="mg-agent-message__label">{message.role === 'human' ? 'You' : 'Support agent demo'}</span>
                 <p>{message.content}</p>
               </article>
