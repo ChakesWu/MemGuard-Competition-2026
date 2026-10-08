@@ -62,7 +62,7 @@ export function normalizeDemoScenario(value: string | undefined): DemoScenario {
 }
 
 export function evidenceUrl(scenario: DemoScenario, traceId: string, section: 'lineage' | 'trust' = 'lineage'): string {
-  return `/evidence?scenario=${encodeURIComponent(scenario)}&trace=${encodeURIComponent(traceId)}#${section}`
+  return `/?scenario=${encodeURIComponent(scenario)}&trace=${encodeURIComponent(traceId)}#${section}`
 }
 
 export function getDemoTrace(inputScenario: string | undefined, inputId?: string): DemoTrace {

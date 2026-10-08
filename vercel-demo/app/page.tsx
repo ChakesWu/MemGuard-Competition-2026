@@ -1,5 +1,8 @@
-import { redirect } from 'next/navigation'
+import EvidenceConsole from '../components/EvidenceConsole'
 
-export default function HomePage() {
-  redirect('/agent')
+type EvidenceQuery = { scenario?: string; trace?: string }
+
+export default async function HomePage({ searchParams }: { searchParams: Promise<EvidenceQuery> }) {
+  const { scenario, trace } = await searchParams
+  return <EvidenceConsole scenario={scenario} traceId={trace} />
 }

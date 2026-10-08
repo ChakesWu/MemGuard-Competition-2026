@@ -4,8 +4,8 @@ import { evidenceUrl, getDemoTrace } from '../lib/demo-evidence'
 
 describe('synthetic customer-support demo', () => {
   it('links each fixed answer to its own trace and section', () => {
-    expect(evidenceUrl('refund', 'demo-refund-2', 'lineage')).toBe('/evidence?scenario=refund&trace=demo-refund-2#lineage')
-    expect(evidenceUrl('refund', 'demo-refund-2', 'trust')).toBe('/evidence?scenario=refund&trace=demo-refund-2#trust')
+    expect(evidenceUrl('refund', 'demo-refund-2', 'lineage')).toBe('/?scenario=refund&trace=demo-refund-2#lineage')
+    expect(evidenceUrl('refund', 'demo-refund-2', 'trust')).toBe('/?scenario=refund&trace=demo-refund-2#trust')
   })
 
   it('shows the exact refund answer with active and expired sources in the console', () => {

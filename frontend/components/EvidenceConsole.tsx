@@ -12,6 +12,7 @@ export default function EvidenceConsole({ scenario, traceId }: { scenario?: stri
         <div className="mg-topbar__actions">
           <span className="mg-connection is-connected">Offline sample</span>
           <a className="mg-button" href="/agent">Support agent</a>
+          <a className="mg-button" href="/handover">Enterprise handover</a>
         </div>
       </header>
 
