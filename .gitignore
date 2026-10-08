@@ -9,3 +9,6 @@ venv/
 myenv/
 .pytest_cache/
 node_modules/
+.next/
+node_modules/
+*.tsbuildinfo
