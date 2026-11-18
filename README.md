@@ -25,6 +25,7 @@ The deployed competition demo is available at [mem-guard-competition-2026.vercel
 | Evidence Console | `/` | Agent outputs, evidence stories, governed memory inventory, and related events |
 | Support Agent | `/agent` | Fixed customer-support answers, inline evidence chips, and a simulated human-approval flow |
 | Enterprise Handover | `/handover` | Source-of-truth boundaries, transfer eligibility, protected data, redaction, and archival decisions |
+| 答信 playable demo | `/memguard` | Judge-playable assistant built only on 6 public documents (27 clauses with page and version): a real model answers, the Daxin gate checks each number against the clause scope (pass / C1 / C3 / C4 / pending), with an evidence panel, an answer lab, and a tamper-evident audit chain. Out-of-scope questions get "no data, hand off to a human" |
 
 To run the same standalone app locally:
 
@@ -36,6 +37,13 @@ npm run dev
 
 Open [http://localhost:3001](http://localhost:3001). No `.env` file, API key, or external service is required for this offline demo. See [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) for a walkthrough.
 
+
+### `/memguard` playable demo notes
+
+- The knowledge base (`vercel-demo/lib/daxin/corpus.ts`) is transcribed from public PDFs. It is **not** an official customer-service assistant and is not affiliated with or endorsed by any institution. Document versions are those printed on the files and may be outdated.
+- `POST /api/memguard/ask` runs input guards (length, injection and off-topic fixed replies, per-instance rate limit), retrieves clauses, then calls the model. Set `GLM_API_KEY` (and optionally `GLM_MODEL`, `GLM_BASE_URL`) as server environment variables on Vercel. Without a key, or on timeout (8 s) or an empty answer, it falls back to an offline answer built from the top clause and labels it "离线后备".
+- The gate (`lib/daxin/engine.ts`) is deterministic and calls no model. It does not judge C2 (old version) or C5 because the knowledge base holds no old-version pairs.
+- Rate limiting is per serverless instance only; this is function-level isolation, not a container sandbox.
 
 ## Run the investigation example
 

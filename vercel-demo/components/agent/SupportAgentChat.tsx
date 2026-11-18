@@ -59,6 +59,7 @@ export default function SupportAgentChat() {
         <div className="mg-topbar__actions">
           <a className="mg-button" href="/">Evidence console</a>
           <a className="mg-button" href="/handover">Enterprise handover</a>
+          <a className="mg-button" href="/memguard">答信试玩</a>
           <button type="button" className="mg-button" onClick={resetDemo}>New conversation</button>
         </div>
       </header>
